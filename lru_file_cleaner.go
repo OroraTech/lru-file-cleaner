@@ -25,7 +25,16 @@ func main() {
 	}
 
 	adapter := adapters.FilesystemBackend{Dirpath: *dirpath}
-	files, _ := adapter.ListContents()
+	files, err := adapter.ListContents()
+	if err != nil {
+		fmt.Println("error listing directory contents:", err)
+		os.Exit(1)
+	}
+
 	cache := cache.FileCache{Files: files}
-	cache.DeleteOldest(*quota)
+	err = cache.DeleteOldest(*quota)
+	if err != nil {
+		fmt.Println("error deleting oldest files:", err)
+		os.Exit(1)
+	}
 }

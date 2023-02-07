@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"os"
 	"sort"
 
@@ -15,20 +16,28 @@ func (c *FileCache) DeleteOldest(quota int64) (err error) {
 	c.sortDescending()
 
 	var quotaUsed int64 = 0
-	deleteableFiles := []adapters.File{}
+	startIndex := -1
 
-	for _, file := range c.Files {
+	for index, file := range c.Files {
 		quotaUsed = quotaUsed + file.Size
 		if quotaUsed > quota {
-			deleteableFiles = append(deleteableFiles, file)
+			startIndex = index
+			break
 		}
 	}
+
+	if startIndex == -1 {
+		return
+	}
+
+	deleteableFiles := c.Files[startIndex:]
 
 	for _, file := range deleteableFiles {
 		err = os.RemoveAll(file.FilePath)
 		if err != nil {
 			return
 		}
+		fmt.Println(file.FilePath)
 	}
 
 	return
